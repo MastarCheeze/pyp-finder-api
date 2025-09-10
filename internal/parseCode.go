@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"errors"
@@ -28,11 +28,11 @@ const (
 // Only type and season are validated
 // Subject code, component code and year are not validated
 type Paper struct {
-	SubjectCode   string // 4-digit subject code
-	Component string // 2-digit component & variant
-	Type      Type   // type of paper
-	Season    Season // season
-	Year      string // 2-digit year
+	SubjectCode string // 4-digit subject code
+	Component   string // 2-digit component & variant
+	Type        Type   // type of paper
+	Season      Season // season
+	Year        string // 2-digit year
 }
 
 func (p Paper) String() string {
@@ -42,7 +42,7 @@ func (p Paper) String() string {
 // case insensitive regex search
 var re = regexp.MustCompile(`(?i)^(?<subject>\d{4})\/(?<component>\d{2})\/((?<type>INSERT|PRE|)\/)?(?<season>\w\/\w)\/(?<year>\d{2})$`)
 
-func parseCode(code string, type_ string) (*Paper, error) {
+func ParseCode(code string, type_ string) (*Paper, error) {
 	if code == "" {
 		return nil, errors.New("Paper code not provided.")
 	}
@@ -93,11 +93,11 @@ func parseCode(code string, type_ string) (*Paper, error) {
 	}
 
 	return &Paper{
-			SubjectCode:   match[1],
-			Component: match[2],
-			Type:      paperType,
-			Season:    season,
-			Year:      match[6],
+			SubjectCode: match[1],
+			Component:   match[2],
+			Type:        paperType,
+			Season:      season,
+			Year:        match[6],
 		},
 		nil
 }

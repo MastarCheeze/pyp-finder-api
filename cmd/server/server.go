@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"projects/pyp-api/internal"
 )
 
 func main() {
@@ -14,7 +15,7 @@ func main() {
 }
 
 func getPaper(c *gin.Context) {
-	p, err := parseCode(c.Query("code"), c.Query("type"))
+	p, err := internal.ParseCode(c.Query("code"), c.Query("type"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": 0,
@@ -23,7 +24,7 @@ func getPaper(c *gin.Context) {
 		return
 	}
 
-	url, err := getPaperUrl(p)
+	url, err := internal.GetPaperUrl(p)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": 0,

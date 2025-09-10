@@ -1,10 +1,10 @@
-package main
+package internal
 
 import (
 	"net/http"
 )
 
-func pageExists(url string) bool {
+func PageExists(url string) bool {
 	resp, err := http.Head(url)
 	if err != nil || resp.StatusCode != http.StatusOK {
 		return false

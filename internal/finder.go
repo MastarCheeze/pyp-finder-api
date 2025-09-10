@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"errors"
@@ -121,7 +121,7 @@ var typeMap = map[Type]string{
 	TypePRE:    "pm",
 }
 
-func getPaperUrl(p *Paper) (string, error) {
+func GetPaperUrl(p *Paper) (string, error) {
 	var subject, exam string
 	var ok bool
 	var innerMap map[string]string
@@ -145,7 +145,7 @@ func getPaperUrl(p *Paper) (string, error) {
 	url = strings.ReplaceAll(url, "{type}", typeMap[p.Type])
 	url = strings.ReplaceAll(url, "{component}", p.Component)
 
-	if !pageExists(url) {
+	if !PageExists(url) {
 		return "", errors.New("Could not find paper.")
 	}
 
