@@ -1,12 +1,15 @@
 FROM --platform=linux/amd64 golang:alpine AS builder
 
-WORKDIR /app
+WORKDIR /build
 
 COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN go build -v -o /app ./...
+RUN go build -v -o /build ./...
+
+FROM scratch
+COPY --from=builder /build/server /server
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
