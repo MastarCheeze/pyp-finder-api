@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 )
@@ -9,9 +10,10 @@ import (
 type Type string
 
 const (
-	TypeInsert      Type = "INSERT"
-	TypePre         Type = "PRE"
-	TypeUnspecified Type = "" // QP and MS
+	TypeQP     Type = "QP"
+	TypeMS     Type = "MS"
+	TypeINSERT Type = "INSERT"
+	TypePRE    Type = "PRE"
 )
 
 type Season string
@@ -23,58 +25,81 @@ const (
 )
 
 // Paper is the representation of a question paper, mark scheme, or other types of material.
-// Only type and season are validated, subject code, component code and year are not
+// Only type and season are validated
+// Subject code, component code and year are not validated
 type Paper struct {
-	Subject   string // 4-digit subject code
-	Component string // 2-digit component/variant
+	SubjectCode   string // 4-digit subject code
+	Component string // 2-digit component & variant
 	Type      Type   // type of paper
 	Season    Season // season
 	Year      string // 2-digit year
 }
 
-var re = regexp.MustCompile(`^(?<subject>\d{4})\/(?<component>\d{2})\/((?<type>INSERT|PRE)\/)?(?<season>(F\/M|M\/J|O\/N))\/(?<year>\d{2})$`)
+func (p Paper) String() string {
+	return fmt.Sprintf("%s/%s/%s/%s/%s", p.SubjectCode, p.Component, p.Type, p.Season, p.Year)
+}
 
-func parseCode(code string) (*Paper, error) {
-	match := re.FindStringSubmatch(strings.ToUpper(code))
+// case insensitive regex search
+var re = regexp.MustCompile(`(?i)^(?<subject>\d{4})\/(?<component>\d{2})\/((?<type>INSERT|PRE|)\/)?(?<season>\w\/\w)\/(?<year>\d{2})$`)
+
+func parseCode(code string, type_ string) (*Paper, error) {
+	if code == "" {
+		return nil, errors.New("Paper code not provided.")
+	}
+
+	// match regex
+	// example match: ["9231/33/INSERT/M/J/21" "9231" "33" "INSERT/" "INSERT" "M/J" "21"]
+	match := re.FindStringSubmatch(code)
 	if match == nil {
 		return nil, errors.New("Invalid paper code.")
 	}
 
-	// format search result into nice map
-	results := make(map[string]string)
-	for i, name := range re.SubexpNames() {
-		if i != 0 && name != "" {
-			results[name] = match[i]
-		}
-	}
-
-	// validate type and season
-	var type_ Type
-	switch results["type"] {
-	case "INSERT":
-		type_ = TypeInsert
-	case "PRE":
-		type_ = TypePre
-	default:
-		type_ = TypeUnspecified
-	}
-
+	// season and type
 	var season Season
-	switch results["season"] {
+	switch strings.ToUpper(match[5]) {
 	case "F/M":
 		season = SeasonFM
 	case "M/J":
 		season = SeasonMJ
 	case "O/N":
 		season = SeasonON
+	default:
+		return nil, errors.New("Invalid season code.")
+	}
+
+	var paperType Type
+	switch strings.ToUpper(match[4]) {
+	case "INSERT":
+		paperType = TypeINSERT
+	case "PRE":
+		paperType = TypePRE
+	case "":
+		switch strings.ToUpper(type_) {
+		case "QP":
+			paperType = TypeQP
+		case "MS":
+			paperType = TypeMS
+		case "INSERT":
+			paperType = TypeINSERT
+		case "PRE":
+			paperType = TypePRE
+		case "":
+			return nil, errors.New("Paper type not provided.")
+		default:
+			return nil, errors.New("Invalid paper type.")
+		}
+	default:
+		return nil, errors.New("Invalid paper type.")
 	}
 
 	return &Paper{
-			Subject:   results["subject"],
-			Component: results["component"],
-			Type:      type_,
+			SubjectCode:   match[1],
+			Component: match[2],
+			Type:      paperType,
 			Season:    season,
-			Year:      results["year"],
+			Year:      match[6],
 		},
 		nil
 }
+
+// TODO write tests
