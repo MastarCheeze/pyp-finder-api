@@ -2,6 +2,8 @@ package internal
 
 import (
 	"errors"
+	"fmt"
+	"net/http"
 	"strings"
 )
 
@@ -145,7 +147,12 @@ func GetPaperUrl(p *Paper) (string, error) {
 	url = strings.ReplaceAll(url, "{type}", typeMap[p.Type])
 	url = strings.ReplaceAll(url, "{component}", p.Component)
 
-	if !PageExists(url) {
+	// check if page exists
+	resp, err := http.Head(url)
+	if err != nil {
+		fmt.Printf("[ERROR] %w\n", err)
+		return "", errors.New("A error has occured on the server.")
+	} else if resp.StatusCode != http.StatusOK {
 		return "", errors.New("Could not find paper.")
 	}
 
