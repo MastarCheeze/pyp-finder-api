@@ -5,11 +5,14 @@ import (
 
 	"projects/pyp-api/internal"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	router := gin.Default()
+	router.Use(cors.Default())
+
 	router.GET("/", getPaper)
 
 	router.Run(":8080")
