@@ -3,15 +3,16 @@ package main
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"projects/pyp-api/internal"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	router := gin.Default()
 	router.GET("/", getPaper)
 
-	router.Run()
+	router.Run(":8080")
 }
 
 func getPaper(c *gin.Context) {
