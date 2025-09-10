@@ -145,7 +145,9 @@ func getPaperUrl(p *Paper) (string, error) {
 	url = strings.ReplaceAll(url, "{type}", typeMap[p.Type])
 	url = strings.ReplaceAll(url, "{component}", p.Component)
 
-	// TODO validate url exists
+	if !pageExists(url) {
+		return "", errors.New("Could not find paper.")
+	}
 
 	return url, nil
 }
